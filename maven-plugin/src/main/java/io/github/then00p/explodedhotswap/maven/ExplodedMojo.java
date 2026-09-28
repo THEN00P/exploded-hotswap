@@ -31,7 +31,7 @@ import io.github.then00p.explodedhotswap.core.ClassFiles;
 import io.github.then00p.explodedhotswap.core.EditorOutput;
 
 /**
- * mvn exploded-hotswap:exploded: the WAR unpacked into target/&lt;finalName&gt; from target/classes
+ * mvn exploded-hotswap:exploded: the WAR unpacked into target/exploded/&lt;finalName&gt;.war from target/classes
  * as they are, without compiling, for an IDE's server tooling to deploy as a folder. Your editor
  * and Maven share target/classes, and mvn compile, test or package recompile the whole module with
  * javac; an editor on the Eclipse compiler (VS Code, Eclipse, Neovim, Zed) cannot HotSwap over
@@ -92,9 +92,18 @@ public class ExplodedMojo extends AbstractMojo {
     String version = war != null && war.getVersion() != null ? war.getVersion() : warPluginVersion;
     Xpp3Dom config = war != null && war.getConfiguration() instanceof Xpp3Dom
       ? new Xpp3Dom((Xpp3Dom) war.getConfiguration()) : configuration();
+    // target/exploded/<finalName>.war, as the Gradle plugin writes it: WildFly only deploys an
+    // exploded folder whose name ends in .war. A webappDirectory the project sets wins.
+    Xpp3Dom folder = config.getChild("webappDirectory");
+    if (folder == null) {
+      folder = new Xpp3Dom("webappDirectory");
+      folder.setValue(new File(project.getBuild().getDirectory(), "exploded/" + project.getBuild().getFinalName() + ".war")
+        .getAbsolutePath());
+      config.addChild(folder);
+    }
     executeMojo(plugin(groupId("org.apache.maven.plugins"), artifactId("maven-war-plugin"), version(version)),
       goal("exploded"), config, executionEnvironment(project, session, pluginManager));
-    getLog().info("exploded-hotswap: deploy " + new File(project.getBuild().getDirectory(), project.getBuild().getFinalName())
+    getLog().info("exploded-hotswap: deploy " + folder.getValue()
       + ((javac.isEmpty() || "javac".equalsIgnoreCase(editorCompiler)) && stale.isEmpty() ? ", ready for HotSwap" : ""));
   }
 

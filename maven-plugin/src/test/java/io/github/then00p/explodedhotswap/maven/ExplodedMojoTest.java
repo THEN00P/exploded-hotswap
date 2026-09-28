@@ -23,7 +23,7 @@ class ExplodedMojoTest {
 
   @TempDir Path project;
 
-  private static final String CLASS = "target/demo/WEB-INF/classes/demo/Hello.class";
+  private static final String CLASS = "target/exploded/demo.war/WEB-INF/classes/demo/Hello.class";
 
   @BeforeEach void setUp() throws IOException {
     write("pom.xml", "<project xmlns=\"http://maven.apache.org/POM/4.0.0\">\n"
@@ -83,7 +83,7 @@ class ExplodedMojoTest {
     assertTrue(output.startsWith("0\n"), output);
     assertTrue(output.contains("were compiled by javac, demo/Hello.class among them"), output);
     assertTrue(read(CLASS).contains("lambda$greet$0"));
-    assertEquals("<p>hi</p>\n", read("target/demo/index.html"));
+    assertEquals("<p>hi</p>\n", read("target/exploded/demo.war/index.html"));
   }
 
   @Test void anEditorOnJavacMakesJavacClassesTheRightKind() throws Exception {
