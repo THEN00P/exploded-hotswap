@@ -109,6 +109,24 @@ class ExplodedHotswapPluginTest {
     assertTrue(read(CLASS).contains("lambda$0"));
   }
 
+  /**
+   * With the configuration cache, the choice between the editor's classes and javac's is made
+   * when the task runs, not when the cache entry was stored: a reused entry follows the editor.
+   */
+  @ParameterizedTest @MethodSource("gradleVersions")
+  void theConfigurationCacheDecidesEachBuildAnew(String gradle) throws IOException {
+    setUp();
+    GradleRunner cached = runner(gradle).withArguments("build", "--configuration-cache", "--stacktrace");
+    BuildResult first = cached.build();
+    assertTrue(first.getOutput().contains("Configuration cache entry stored"), first.getOutput());
+    assertTrue(read(CLASS).contains("lambda$greet$0"));
+    editorBuild("11");
+    BuildResult second = cached.build();
+    assertTrue(second.getOutput().contains("Configuration cache entry reused"), second.getOutput());
+    assertTrue(second.getOutput().contains("explodedWar: the editor's classes"), second.getOutput());
+    assertTrue(read(CLASS).contains("lambda$0"), "the editor's class, though the entry was stored before it existed");
+  }
+
   @ParameterizedTest @MethodSource("gradleVersions")
   void anEditorBuildingForANewerJavaFailsTheBuild(String gradle) throws IOException {
     setUp();

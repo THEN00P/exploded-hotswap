@@ -1,7 +1,6 @@
 package io.github.then00p.explodedhotswap;
 
 import java.io.File;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -50,7 +49,14 @@ public class ExplodedHotswapPlugin implements Plugin<Project> {
         + "classes when they are current, so HotSwap works.");
       // The editor's classes go first and win; the WAR's own files fill in everything else.
       task.setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE);
-      task.into("WEB-INF/classes", classes -> classes.from(project.provider(decision::classes)).include("**/*.class"));
+      // Decided when the task runs, not when it is configured: the configuration cache would
+      // otherwise keep the first build's choice.
+      task.into("WEB-INF/classes", classes -> classes.from(extension.getEditorOutput()).include("**/*.class")
+        .eachFile(file -> {
+          if (decision.stale().isPresent()) {
+            file.exclude();
+          }
+        }));
       task.with(war.get());
       task.into(project.getLayout().getBuildDirectory().dir(war.flatMap(w -> w.getArchiveFileName())
         .map(name -> "exploded/" + name)));
@@ -68,7 +74,8 @@ public class ExplodedHotswapPlugin implements Plugin<Project> {
     private final Provider<File> editorOutput;
     private final Provider<File> javacClasses;
     private final FileCollection sources;
-    private Optional<String> stale;
+    /** Not stored in the configuration cache: each build decides anew. */
+    private transient Optional<String> stale;
 
     Decision(Provider<File> editorOutput, Provider<File> javacClasses, FileCollection sources) {
       this.editorOutput = editorOutput;
@@ -76,15 +83,11 @@ public class ExplodedHotswapPlugin implements Plugin<Project> {
       this.sources = sources;
     }
 
-    private synchronized Optional<String> stale() {
+    synchronized Optional<String> stale() {
       if (stale == null) {
         stale = EditorOutput.stale(editorOutput.get(), sources.getFiles());
       }
       return stale;
-    }
-
-    List<File> classes() {
-      return stale().isPresent() ? List.of() : List.of(editorOutput.get());
     }
 
     /**
