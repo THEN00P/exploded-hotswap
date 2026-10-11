@@ -1,7 +1,13 @@
+import com.vanniktech.maven.publish.JavaLibrary
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.SourcesJar
+
 plugins {
   id("org.gradlex.maven-plugin-development") version "1.0.3"
-  `maven-publish`
+  id("com.vanniktech.maven.publish")
 }
+
+description = "Maven plugin: mvn exploded-hotswap:exploded lays out target/exploded with the classes your editor compiled, for HotSwap."
 
 dependencies {
   implementation(project(":exploded-hotswap-core"))
@@ -19,12 +25,8 @@ mavenPlugin {
   goalPrefix = "exploded-hotswap"
 }
 
-publishing {
-  publications {
-    create<MavenPublication>("mavenPlugin") {
-      from(components["java"])
-    }
-  }
+mavenPublishing {
+  configure(JavaLibrary(javadocJar = JavadocJar.Javadoc(), sourcesJar = SourcesJar.Sources()))
 }
 
 tasks.test {
