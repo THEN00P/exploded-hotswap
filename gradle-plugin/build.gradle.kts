@@ -1,8 +1,11 @@
 plugins {
   `java-gradle-plugin`
-  // publishToMavenLocal, for trying the plugin in other builds before it is on the Plugin Portal.
-  `maven-publish`
+  // The Plugin Portal, for plugins {} blocks; Maven Central as well, with the other modules.
+  id("com.gradle.plugin-publish") version "2.2.1"
+  id("com.vanniktech.maven.publish")
 }
+
+description = "Gradle plugin: unpacks the WAR into build/exploded with the classes your editor compiled, for HotSwap."
 
 dependencies {
   implementation(project(":exploded-hotswap-core"))
@@ -11,6 +14,8 @@ dependencies {
 }
 
 gradlePlugin {
+  website = "https://github.com/THEN00P/exploded-hotswap"
+  vcsUrl = "https://github.com/THEN00P/exploded-hotswap.git"
   plugins {
     create("explodedHotswap") {
       id = "io.github.then00p.exploded-hotswap"
@@ -25,5 +30,5 @@ gradlePlugin {
 
 tasks.test {
   // The functional tests run Gradle 8 and 9 through TestKit.
-  systemProperty("gradle.versions", "8.14.5,9.8.0")
+  systemProperty("gradle.versions", "8.14.5,9.8.1")
 }

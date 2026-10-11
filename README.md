@@ -12,33 +12,14 @@ In your user `settings.json`, turn on HotSwap on save:
 "java.debug.settings.hotCodeReplace": "auto"
 ```
 
-The plugins aren't published yet, so install them into your local Maven repository once:
-
-```sh
-git clone https://github.com/THEN00P/exploded-hotswap.git
-cd exploded-hotswap
-./gradlew publishToMavenLocal
-```
-
 ### Gradle
-
-`settings.gradle.kts`:
-
-```kotlin
-pluginManagement {
-  repositories {
-    mavenLocal()
-    gradlePluginPortal()
-  }
-}
-```
 
 `build.gradle.kts`:
 
 ```kotlin
 plugins {
   war
-  id("io.github.then00p.exploded-hotswap") version "0.1.0-SNAPSHOT"
+  id("io.github.then00p.exploded-hotswap") version "0.1.0"
 }
 
 java {
@@ -67,7 +48,7 @@ Run `./gradlew build` and a full publish again when you add or change dependenci
 <plugin>
   <groupId>io.github.then00p</groupId>
   <artifactId>exploded-hotswap-maven-plugin</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.1.0</version>
 </plugin>
 ```
 
