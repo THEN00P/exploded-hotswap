@@ -5,7 +5,8 @@ plugins {
 }
 
 // Shared by the three modules: coordinates, Java 11 bytecode (Gradle 8 and Maven 3.9 still run on
-// Java 11), JUnit, and publishing to Maven Central with the POM it requires.
+// Java 11), JUnit, and publishing to Maven Central with the POM it requires. Gradle itself runs on
+// JDK 21 or 25.
 subprojects {
   group = "io.github.then00p"
   // The release workflow passes the tag's version; every other build is a snapshot.
@@ -17,8 +18,10 @@ subprojects {
 
   plugins.withType<JavaPlugin> {
     extensions.configure<JavaPluginExtension> {
+      // Compiles and runs the tests on 21, which runs Gradle 9 and still runs Gradle 8 (8.14 stops
+      // at Java 24) for the TestKit tests; foojay downloads it when missing.
       toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
       }
     }
     tasks.withType<JavaCompile>().configureEach {

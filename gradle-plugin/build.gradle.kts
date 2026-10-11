@@ -30,5 +30,5 @@ gradlePlugin {
 
 tasks.test {
   // The functional tests run Gradle 8 and 9 through TestKit.
-  systemProperty("gradle.versions", "8.14.5,9.8.0")
+  systemProperty("gradle.versions", "8.14.5,9.8.1")
 }
